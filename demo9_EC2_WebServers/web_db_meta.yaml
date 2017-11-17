@@ -1,0 +1,73 @@
+---
+
+- hosts: "tag_Name_EC2_Ansible"
+  sudo: yes
+  vars: 
+    http_port: 80
+    doc_root: /var/www/html/ansible
+    doc_dir: /ansible/ 
+
+  vars_prompt:
+  - name: username
+    prompt: What is your name ? 
+
+  tasks:
+  - name: Install Apache Packages
+    yum: name=httpd state=present
+    when: ansible_os_family == "RedHat"
+
+  - name: Start the Apache Service
+    service: name=httpd state=started enabled=True
+
+
+  - name: Deploy the custome apache configuration
+    template: src=templates/httpd.j2 dest=/etc/httpd/conf/httpd.conf
+    notify:
+      - Stop Apache
+
+  - name: Flush Handler
+    meta: flush_handlers
+  
+  - command: ls /var/www/html/amit
+    register: result1
+    ignore_errors: yes
+ 
+  - file: path=/var/www/html/amit state=directory
+    when: result1|failed
+
+  - name: Creating Site Location
+    file: path={{doc_root}} state=directory
+
+  - name: Deploy Site Files
+    template: src=templates/index.j2 dest={{doc_root}}/index.html
+
+  - name: Deploy Site Info Files
+    template: src=templates/info.j2 dest={{doc_root}}/info.html
+    notify:
+      - Restart Apache
+  
+
+  - command: ls /path/doesnt/exist
+    register: result
+    ignore_errors: yes
+
+  - debug: msg="Failure to excute ls command!"
+    when: result|failed
+
+  handlers:
+  - name: Restart Apache
+    service: name=httpd state=restarted
+  - name: Stop Apache
+    service: name=httpd state=stopped
+
+
+- hosts: dbservers
+  sudo: yes
+
+  tasks: 
+  - name: Install mysql packages
+    apt: name=mysql-server state=present
+    when: ansible_os_family == "Ubuntu"
+
+  - name: Start the mysql service
+    service: name=mysql state=started
