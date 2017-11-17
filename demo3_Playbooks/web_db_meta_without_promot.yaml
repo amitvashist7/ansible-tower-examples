@@ -38,7 +38,7 @@
     template: src=templates/index.j2 dest={{doc_root}}/index.html
 
   - name: Deploy Site Info Files
-    template: src=templates/info.j2 dest={{doc_root}}/info.html
+    template: src=templates/info_without.j2 dest={{doc_root}}/info.html
     notify:
       - Restart Apache
   
