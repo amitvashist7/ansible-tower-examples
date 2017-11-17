@@ -55,15 +55,3 @@
     service: name=httpd state=restarted
   - name: Stop Apache
     service: name=httpd state=stopped
-
-
-- hosts: dbservers
-  sudo: yes
-
-  tasks: 
-  - name: Install mysql packages
-    apt: name=mysql-server state=present
-    when: ansible_os_family == "Ubuntu"
-
-  - name: Start the mysql service
-    service: name=mysql state=started
