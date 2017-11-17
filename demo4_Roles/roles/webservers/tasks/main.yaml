@@ -1,0 +1,22 @@
+---
+
+- name: Install Apache Packages
+  yum: name=httpd state=present
+  when: ansible_os_family == "RedHat"
+
+- name: Start Apache Service 
+  service: name=httpd state=started enabled=True
+
+- name: Deploy Configuration Files
+  template: src=templates/httpd.j2 dest=/etc/httpd/conf/httpd.conf
+  notify:
+    - Restart Apache
+
+- name: Creating Site Location
+  file: path={{doc_root}} state=directory
+
+- name: Deploy Site Files
+  template: src=templates/index.j2 dest={{doc_root}}/index.html
+
+- name: Deploy Node Info.
+  template: src=templates/info.j2 dest={{doc_root}}/info.html

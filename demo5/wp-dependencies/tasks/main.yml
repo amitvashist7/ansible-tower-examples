@@ -1,0 +1,33 @@
+---
+# tasks file for wp-dependencies
+
+- name: Update the packages
+  yum: name=* state=latest
+
+- name: Dep for Wordpress
+  yum: name={{ item }} state=present
+
+  with_items:
+  - httpd
+  - mariadb-server
+  - mariadb
+  - php
+  - php-mysql
+  - MySQL-python
+
+- name: Bring the MariaDB UP
+  service: name=mariadb state=started enabled=yes
+
+- name: Deploy MySQL Config
+  copy: src=templates/my.cnf dest=/root/.my.cnf
+
+- name: Create Maria WordPress DB
+  mysql_db: name={{ wp_mysql_db }} state=present
+
+- name: Creating MariaDB user info.
+  mysql_user:
+    login_user=root
+    login_password=redhat
+    name={{ wp_mysql_user}}
+    password={{ wp_mysql_password }}
+    priv=*.*:ALL

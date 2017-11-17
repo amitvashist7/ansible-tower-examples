@@ -1,0 +1,14 @@
+---
+# tasks file for wp-install-config
+
+- name: Create DIR to Downlaod WP.
+  command: mkdir -p /opt/source/wordpress
+
+- name: Download Wordpress
+  get_url: url=https://wordpress.org/latest.tar.gz dest=/opt/source/wordpress/wordpress.tar.gz
+
+- name: Extrat Wordpress
+  command: "tar zxf /opt/source/wordpress/wordpress.tar.gz -C /var/www/html --strip-components 1"
+
+- name: Setting Up Config. 
+  copy: src=templates/wp-config-sample.php dest=/var/www/html/wp-config.php mode=0644

@@ -1,0 +1,7 @@
+---
+
+- name: Install mysql packages
+  apt: name=mysql-server state=present
+
+- name: Start the mysql service
+  service: name=mysql state=started

@@ -1,0 +1,6 @@
+---
+
+http_port: 80
+doc_root: /var/www/html/ansible
+doc_dir: /ansible/
+username: Amit_Vashist

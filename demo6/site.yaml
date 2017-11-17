@@ -1,0 +1,7 @@
+---
+
+- hosts: web02
+  sudo: yes
+  roles:
+  - wp-dependencies
+  - wp-install-config

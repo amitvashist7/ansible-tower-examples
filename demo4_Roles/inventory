@@ -1,0 +1,29 @@
+web01 ansible_ssh_host=172.31.0.31
+web02 ansible_ssh_host=172.31.0.32
+dbserver1.example.com
+
+[webservers]
+web01
+web02
+
+[prod-web]
+web01
+
+[test-web]
+web02
+
+[dbservers]
+dbserver1.example.com
+
+
+[datacenter-west:children]
+webservers
+dbservers
+
+[datacenter-east:children]
+backend
+
+
+[datacenter-west:vars]
+ansible_ssh_user=vagrant
+ansible_ssh_pass=vagrant
