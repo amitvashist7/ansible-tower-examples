@@ -1,0 +1,15 @@
+---
+galaxy_info:
+  author: Dmitry Matrosov
+  description: Install Docker on Ubuntu/Debian
+  license: MIT
+  min_ansible_version: 1.2
+  platforms:
+  - name: Ubuntu
+  - name: Debian
+  categories:
+  - cloud
+  - development
+  - packaging
+  - system
+dependencies: []
