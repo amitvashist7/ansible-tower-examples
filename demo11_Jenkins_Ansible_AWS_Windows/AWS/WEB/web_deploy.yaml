@@ -1,0 +1,52 @@
+---
+
+- hosts: tag_Name_EC2_Ansible_Web
+  sudo: yes
+  vars: 
+    http_port: 80
+    doc_root: /var/www/html/ansible
+    doc_dir: /ansible/ 
+
+  tasks:
+  - name: Install Apache Packages
+    yum: name=httpd state=present
+    when: ansible_os_family == "RedHat"
+
+  - name: Start the Apache Service
+    service: name=httpd state=started enabled=True
+
+
+  - name: Deploy the custome apache configuration
+    template: src=templates/httpd.j2 dest=/etc/httpd/conf/httpd.conf
+    notify:
+      - Stop Apache
+
+  - name: Flush Handler
+    meta: flush_handlers
+  
+  - command: ls /var/www/html/amit
+    register: result1
+    ignore_errors: yes
+ 
+  - file: path=/var/www/html/amit state=directory
+    when: result1|failed
+
+  - name: Creating Site Location
+    file: path={{doc_root}} state=directory
+
+  - name: Deploy Site Files
+    template: src=templates/index.j2 dest={{doc_root}}/index.html
+
+  - name: Deploy Site Files
+    template: src=templates/jenkins.html dest={{doc_root}}/jenkins.html
+ 
+  - name: Deploy Site Info Files
+    template: src=templates/info_without.j2 dest={{doc_root}}/info.html
+    notify:
+      - Restart Apache
+  
+  handlers:
+  - name: Restart Apache
+    service: name=httpd state=restarted
+  - name: Stop Apache
+    service: name=httpd state=stopped

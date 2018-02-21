@@ -1,0 +1,16 @@
+#
+ec2: 
+  region: us-east-1
+  credentials: myansiblekey
+  image: ami-c998b6b2
+  sg: myansibleSG
+  instance_type: t2.micro
+  subnet: subnet-d9434290
+  public_ip: yes
+  count: 1
+  tags: 
+    Name: EC2_Ansible_Web
+  volumes:
+    - device_name: /dev/xvda
+      volume_type: standard
+      volume_size: 8

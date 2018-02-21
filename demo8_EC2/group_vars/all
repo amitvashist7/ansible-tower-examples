@@ -7,9 +7,9 @@ ec2:
   instance_type: t2.micro
   subnet: subnet-d9434290
   public_ip: yes
-  count: 3
+  count: 1
   tags: 
-    Name: EC2_Ansible
+    Name: EC2_Ansible_App
   volumes:
     - device_name: /dev/xvda
       volume_type: standard

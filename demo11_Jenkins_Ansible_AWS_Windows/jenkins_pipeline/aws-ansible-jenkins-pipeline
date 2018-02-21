@@ -1,0 +1,89 @@
+
+
+
+
+node{
+    
+    notify('Started')
+    
+    try {
+        
+stage('Clean Repo') {
+        sh 'rm -rf *'
+        }
+        stage('checkout') {
+        git 'https://github.com/amitvashist7/jenkins2-course-test-project.git'
+        }
+        
+        stage('Build & Compile') {
+        sh 'mvn compile'
+        }
+    
+    stage('Code Testing') {
+        sh 'mvn test'
+        }
+stage('Packaging') {
+        sh 'mvn package'
+        }
+   
+        stage('archival') {
+publishHTML([allowMissing: true, alwaysLinkToLastBuild: false, keepAll: true, reportDir: 'target/site/jacoco/', reportFiles: 'index.html', reportName: 'Code Coverage', reportTitles: ''])    
+step([$class: 'JUnitResultArchiver', testResults: 'target/surefire-reports/TEST-*.xml']) 
+        archiveArtifacts "target/*?ar"
+        }
+
+        
+        notify('Success')
+stage('Deploy to Stage Env') {
+sh "echo '<h1>TASK BUILD ID ${env.BUILD_DISPLAY_NAME}</h1>' > apps/index.html"
+        sh 'docker-compose up -d --build'
+}
+
+stage ('parallel job') {
+parallel task1: { sh 'echo "task1"' },  
+task2: { sh 'echo "task2"' }, 
+task3: { sh 'echo "task2"' }
+}
+
+stage('Getting Ready for AWS') {
+       sh 'cp -rf apps/index.html /etc/ansible/AWS/WEB/templates/jenkins.html'
+
+}
+
+stage('WAR File Ready for AWS'){       
+       sh 'cp -rf  sample.war /etc/ansible/AWS/APP/templates/'
+       sh 'cp -rf  target/petclinic.war /etc/ansible/AWS/APP/templates/'
+       
+}
+
+stage('EC2 Provisiong'){
+       sh 'ansible-playbook -i /etc/ansible/AWS/EC2/env/hosts /etc/ansible/AWS/EC2/aws_ec2_site.yaml'
+}
+
+stage('Waiting for EC2 to sattel down'){
+       sh 'sleep 200'
+       
+}
+
+stage('Deploy App code to AWS EC2'){
+       sh 'ansible-playbook -i /etc/ansible/ec2.py /etc/ansible/AWS/WEB/web_deploy.yaml -u ec2-user --key-file=/etc/ansible/AWS/myansiblekey.pem'
+}
+
+   
+    } catch (err) { 
+        notify ("Error ${err}")
+        currentBuild.result = 'FAILURE'
+    }
+
+}
+   
+
+def notify(status){
+    emailext (
+      to: "amitvashist7@gmail.com",
+      subject: "${status}: Job '${env.JOB_NAME} [${env.BUILD_NUMBER}]'",
+      body: """<p>${status}: Job '${env.JOB_NAME} [${env.BUILD_NUMBER}]':</p>
+        <p>Check console output at <a href='${env.BUILD_URL}'>${env.JOB_NAME} [${env.BUILD_NUMBER}]</a></p>""",
+    )
+}
+

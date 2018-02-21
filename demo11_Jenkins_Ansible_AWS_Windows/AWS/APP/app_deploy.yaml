@@ -1,0 +1,53 @@
+---
+
+- hosts: tag_Name_EC2_Ansible_Web
+  sudo: yes
+  vars: 
+    http_port: 80
+    doc_root: /usr/share/tomcat/webapps
+    doc_dir: /usr/share/tomcat/webapps/ROOT/ 
+
+  tasks:
+  - name: Install Apache Tomcat Packages
+    yum: name=tomcat state=present
+    yum: name=tomcat-webapps state=present
+    yum: name=tomcat-admin-webapps state=present
+    when: ansible_os_family == "RedHat"
+
+
+  - name: Install Apache Tomcat Packages
+    yum: name=wget state=present
+    when: ansible_os_family == "RedHat"
+
+  - name: Start the Apache Tomcat Service
+    service: name=tomcat state=started enabled=True
+
+
+  - name: Deploy the custome apache configuration
+    template: src=templates/tomcat-users.xml dest=/usr/share/tomcat/conf/
+    notify:
+      - Stop Tomcat
+
+  - name: Flush Handler
+    meta: flush_handlers
+  
+
+  - name: Deploy Site Files
+    command:  wget https://github.com/amitvashist7/jenkins2-course-test-project/blob/master/sample.war -P  {{doc_root}}/
+
+ 
+  - name: Deploy Site Info Files
+    template: src=templates/info_without.j2 dest={{doc_dir}}/info.html
+
+
+
+  - name: Deploy Site Info Files
+    template: src=templates/jenkins.html dest={{doc_root}}/jenkins.html
+    notify:
+      - Restart Tomcat
+  
+  handlers:
+  - name: Restart Tomcat
+    service: name=tomcat state=restarted
+  - name: Stop Tomcat
+    service: name=tomcat state=stopped
