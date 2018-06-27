@@ -1,0 +1,142 @@
+﻿1. AWS Access Keys  ( IAM )
+2. Export the Access_Key_ID & Key on your ACS machine. 
+
+export AWS_ACCESS_KEY_ID="XXXXXXXXXXX"
+export AWS_SECRET_ACCESS_KEY="XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"
+
+3. Download EC2 Dynamic Inventory Scripts from the following URL: https://aws.amazon.com/blogs/apn/getting-started-with-ansible-and-dynamic-amazon-ec2-inventory-management/
+
+https://raw.githubusercontent.com/ansible/ansible/devel/contrib/inventory/ec2.py
+https://raw.githubusercontent.com/ansible/ansible/devel/contrib/inventory/ec2.ini
+
+Export the same: 
+
+[root@acs ~]# export ANSIBLE_HOSTS=/etc/ansible/ec2.py
+[root@acs ~]# export EC2_INI_PATH=/etc/ansible/ec2.ini
+
+4. Need to install python boto & boto3 
+
+[root@acs ~]# yum install python-pip
+[root@acs ~]# pip install boto & pip install boto3
+
+5. Create ~./boto file. cat 
+
+[root@acs ansible]# cat ~/.boto
+[Credentials]
+aws_access_key_id="XXXXXXXXXXX"
+aws_secret_access_key="XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"
+[root@acs ansible]#
+
+
+6. Run ec2.py script to check the AWS Intance inventory. 
+
+[root@acs ~]# /etc/ansible/ec2.py
+
+7. Play Book for creating EC2 Instances
+
+[root@acs ec2-project]# tree .
+.
+├── aws_ec2.yaml
+├── env
+│   └── hosts
+├── group_vars
+│   └── all
+└── roles
+    └── ec2
+        └── tasks
+            └── main.yaml
+
+5 directories, 4 files
+[root@acs ec2-project]#
+
+
+Playbook: 
+======================>
+[root@acs ec2-project]# cat aws_ec2.yaml
+---
+
+- hosts: localhost
+  connection: local
+  roles:
+    - ec2
+  tags: ec2_create
+[root@acs ec2-project]#
+
+
+Inventory: 
+======================>
+[root@acs ec2-project]# cat env/hosts
+localhost ansible_ssh_host=localhost ansible_connection=local
+[root@acs ec2-project]#
+
+Group Varible for all:
+======================>
+
+[root@acs ec2-project]# cat group_vars/all
+#
+ec2:
+  region: us-east-1
+  credentials: myansiblekeypair
+  image: ami-c998b6b2
+  sg: myansibleSG
+  instance_type: t2.micro
+  subnet: subnet-d9434290
+  public_ip: yes
+  tags:
+    Name: EC2Ansible
+  volumes:
+    - device_name: /dev/xvda
+      volume_type: standard
+      volume_size: 8
+[root@acs ec2-project]#
+
+Tasks:
+======================>
+[root@acs ec2-project]# cat roles/ec2/tasks/main.yaml
+---
+- name: Create Instance
+  ec2:
+    region: "{{ ec2.region }}"
+    keypair: "{{ ec2.credentials }}"
+    instance_tags: "{{ ec2.tags }}"
+    image: "{{ ec2.image }}"
+    instance_type: "{{ ec2.instance_type}}"
+    instance_profile_name: "{{ec2.role | default ('') }}"
+    group: "{{ ec2.sg }}"
+    vpc_subnet_id: "{{ ec2.subnet }}"
+    assign_public_ip: "{{ ec2.public_ip | default('no') }}"
+    private_ip: "{{ ec2.private_ip | default ('')}}"
+    wait: true
+[root@acs ec2-project]#
+
+
+8. Run the Playbook. 
+
+[root@acs ec2-project]# ansible-playbook -i env/hosts aws_ec2.yaml -vvvv
+
+
+- VMware: Ansible_Cantroller 
+- 192.168.100.205
+
+[root@acs ansible-examples]# cd -
+/root/test/ansible-examples/lamp_haproxy
+[root@acs lamp_haproxy]#
+
+
+ansible-playbook -i hosts site.yml -u root --key-file=myansiblekeypair.pem
+
+
+
+
+
+
+[root@ansible-control ~]# cat .boto
+[Credentials]
+aws_access_key_id="XXXXXXXXXXX"
+aws_secret_access_key="XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"
+[root@ansible-control ~]#
+
+
+---------------------------------->
+
+[root@ansible-control demo3]# ansible-playbook -i ../ec2.py web_db_meta.yaml -u ec2-user --key-file=/root/myansiblekey.pe 
