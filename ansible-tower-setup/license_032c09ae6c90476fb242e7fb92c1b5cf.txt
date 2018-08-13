@@ -1,0 +1,11 @@
+{
+    "company_name": "HCL Technologies", 
+    "contact_email": "amitvashist7@outlook.com", 
+    "contact_name": "Amit Kumar", 
+    "hostname": "032c09ae6c90476fb242e7fb92c1b5cf", 
+    "instance_count": 10, 
+    "license_date": 2137692267, 
+    "license_key": "95c2111642110a2178103d189c02df124d57ede28d2441befe1e7525419b2668", 
+    "license_type": "basic", 
+    "subscription_name": "Red Hat Ansible Tower, Self-Support (10 Managed Nodes)"
+}
